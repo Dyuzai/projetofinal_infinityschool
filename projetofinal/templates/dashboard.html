@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BatDashboard</title>
+
+  <!-- Estilos e fontes -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/dashboard.css" />
+</head>
+<body>
+  <div class="dashboard-container">
+
+    <!-- Header -->
+    <header class="dashboard-header">
+      <div class="user-info">
+        <span class="username">
+          <i class="fas fa-user-secret"></i> {{ session.user.username }}
+        </span>
+        <a href="/logout" class="logout-btn">
+          <i class="fas fa-sign-out-alt"></i> Sair
+        </a>
+      </div>
+    </header>
+
+    <!-- Estatísticas -->
+    <section class="stats-container">
+      <div class="stat-card crime-increase">
+        <div class="stat-icon">
+          <i class="fas fa-skull-crossbones"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Criminalidade em Gotham</h3>
+          <div class="stat-value">+70%</div>
+          <p>aumento nos últimos 30 dias</p>
+        </div>
+      </div>
+
+      <div class="stat-card death-decrease">
+        <div class="stat-icon">
+          <i class="fas fa-heartbeat"></i>
+        </div>
+        <div class="stat-content">
+          <h3>Taxa de Mortalidade</h3>
+          <div class="stat-value">-50%</div>
+          <p>redução nos últimos 30 dias</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Inventário -->
+    <section class="inventory-section">
+      <div class="section-header">
+        <h2><i class="fas fa-toolbox"></i> Inventário do Batman</h2>
+        {% if role in ['gerente', 'adm'] %}
+        <button class="add-item-btn" onclick="toggleForm()">
+          <i class="fas fa-plus"></i> Novo Item
+        </button>
+        {% endif %}
+      </div>
+
+      {% if role in ['gerente', 'adm'] %}
+      <div class="item-form" id="itemForm" style="display: none;">
+        <form method="POST" action="/add_item" onsubmit="return validateForm()">
+          <input type="text" name="name" placeholder="Nome do item" required />
+          <input type="number" name="quantity" placeholder="Quantidade" min="1" required />
+          <textarea name="description" placeholder="Descrição"></textarea>
+          <div class="form-buttons">
+            <button type="submit" class="btn-save">Salvar</button>
+            <button type="button" class="btn-cancel" onclick="toggleForm()">Cancelar</button>
+          </div>
+        </form>
+      </div>
+      {% endif %}
+
+      <!-- Lista de Itens -->
+      <div class="items-grid">
+        {% for item in items %}
+        <div class="item-card">
+          <div class="item-header">
+            <h3>{{ item.name }}</h3>
+            {% if role == 'adm' %}
+            <form method="POST" action="/delete_item/{{ item.id }}">
+              <button type="submit" class="delete-btn">
+                <i class="fas fa-trash"></i>
+              </button>
+            </form>
+            {% endif %}
+          </div>
+          <div class="item-body">
+            <p class="quantity">Estoque: {{ item.quantity }}</p>
+            <p class="description">{{ item.description }}</p>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+  </div>
+
+  <!-- Scripts -->
+  <script>
+    function toggleForm() {
+      const form = document.getElementById('itemForm');
+      form.style.display = form.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function validateForm() {
+      const name = document.querySelector('input[name="name"]');
+      const quantity = document.querySelector('input[name="quantity"]');
+      
+      if (!name.value || !quantity.value) {
+        alert('Preencha todos os campos obrigatórios!');
+        return false;
+      }
+      return true;
+    }
+  </script>
+</body>
+</html>
